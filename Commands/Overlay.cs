@@ -1,10 +1,14 @@
 ﻿using ManyConsole;
-using MiscUtil.Conversion;
-using MiscUtil.IO;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using ELFSharp.ELF;
+using ELFSharp.Utilities;
+using ELFSharp.ELF.Segments;
+using ELFSharp.ELF.Sections;
+using MiscUtil.IO;
+using MiscUtil.Conversion;
 using ELF;
 
 namespace Toolchain
@@ -82,22 +86,12 @@ namespace Toolchain
 
         private void GenerateOverlayFile(string objectFile)
         {
-            Header elf;
+            var elf = ELFReader.Load<uint>(InputFiles[0]);
 
-            using (var file = File.Open(InputFiles[0], FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete))
-            {
-                using (var reader = new EndianBinaryReader(EndianBitConverter.Big, file))
-                {
-                    elf = new Header(reader);
-                }
-            }
-
-            var relocs = GenerateRelocationSection(elf);
-
-            var textSection = elf.SectionHeaders.Where(header => ".text".Equals(header?.GetName())).FirstOrDefault();
-            var dataSection = elf.SectionHeaders.Where(header => ".data".Equals(header?.GetName())).FirstOrDefault();
-            var rodataSection = elf.SectionHeaders.Where(header => ".rodata".Equals(header?.GetName())).FirstOrDefault();
-            var bssSection = elf.SectionHeaders.Where(header => ".bss".Equals(header?.GetName())).FirstOrDefault();
+            var textSection = elf.Sections.Where(section => ".text".Equals(section.Name)).FirstOrDefault();
+            var dataSection = elf.Sections.Where(section => ".data".Equals(section.Name)).FirstOrDefault();
+            var rodataSection = elf.Sections.Where(section => ".rodata".Equals(section.Name)).FirstOrDefault();
+            var bssSection = elf.Sections.Where(section => ".bss".Equals(section.Name)).FirstOrDefault();
 
             if (textSection == null)
             {
@@ -109,15 +103,26 @@ namespace Toolchain
                 throw new KeyNotFoundException("No .data or .rodata sections found in elf file!  Overlay invalid without " + InitializationVariable + ".");
             }
 
-            var programSection = elf.ProgramHeaders.Where(header => header.Flags.HasFlag(SegmentFlags.EXECUTABLE)).FirstOrDefault();
+            var programSection = elf.Segments.Where(segment => segment.Flags.HasFlag(SegmentFlags.Execute)).FirstOrDefault();
 
             if (programSection == null && !ForceNoProgram)
             {
                 throw new KeyNotFoundException("Could not find executable program section in the overlay.");
             }
 
-            var initSymbol = (elf.SectionHeaders.Where(header => header.Type == SectionType.SYM_TABLE).First()?.SectionData as SymbolTable)?.Symbols.Where(symbol =>
-                InitializationVariable.Equals(symbol?.GetName())).FirstOrDefault();
+            var symbolTable = elf.GetSections<SymbolTable<uint>>().FirstOrDefault();
+            var relocs = GenerateRelocationSection(elf, symbolTable, programSection.Address);
+            SymbolEntry<uint> initSymbol = null;
+            
+            if (symbolTable == null && ShowInitAddress)
+            {
+                throw new KeyNotFoundException("Could not find symbol table in the overlay.");
+            }
+            else
+            {
+                initSymbol = symbolTable.Entries.Where(symbol => InitializationVariable.Equals(symbol.Name)).FirstOrDefault();
+            }
+
             int length = 0;
 
             if (initSymbol == null && ShowInitAddress)
@@ -127,17 +132,17 @@ namespace Toolchain
 
             using (var overlayStream = new EndianBinaryWriter(EndianBitConverter.Big, File.Create(OverlayPath, 1024, FileOptions.RandomAccess)))
             {
-                overlayStream.Write(programSection.Data);
+                overlayStream.Write(programSection.GetFileContents());
 
                 // Ensure the stream is pointing to the end of a 16-byte (64-bit) alignment
                 ForceAlignWrite(overlayStream, 16);
 
                 // Writing overlay header section
                 int position = (int)overlayStream.BaseStream.Position;
-                overlayStream.Write(textSection != null ? textSection.SegmentImageSize : 0);
-                overlayStream.Write(dataSection != null ? dataSection.SegmentImageSize : 0);
-                overlayStream.Write(rodataSection != null ? rodataSection.SegmentImageSize : 0);
-                overlayStream.Write(bssSection != null ? bssSection.SegmentImageSize : 0);
+                overlayStream.Write(textSection != null ? textSection.Size : 0);
+                overlayStream.Write(dataSection != null ? dataSection.Size : 0);
+                overlayStream.Write(rodataSection != null ? rodataSection.Size : 0);
+                overlayStream.Write(bssSection != null ? bssSection.Size : 0);
 
                 // Write relocation section
                 overlayStream.Write(relocs.Count);
@@ -186,46 +191,29 @@ namespace Toolchain
             }
         }
 
-        private List<ZeldaReloc> GenerateRelocationSection(Header header)
+        private List<ZeldaReloc> GenerateRelocationSection(ELF<uint> elf, SymbolTable<uint> symbols, uint baseAddress)
         {
-            var relocationSections = header.SectionHeaders.Where(currentHeader => currentHeader.Type == SectionType.RELOC || currentHeader.Type == SectionType.RELOC_ADD);
+            var relocationSections = elf.Sections.Where(section => section.Type == SectionType.Relocation);
 
             var relocs = new List<ZeldaReloc>();
 
             foreach (var section in relocationSections)
             {
-                var symbolTable = (SymbolTable)header.SectionHeaders[section.LinkIndex].SectionData;
+                var relocSection = new SimpleRelocationSection(section, symbols);
 
-                if (section.Type == SectionType.RELOC)
+                foreach (var reloc in relocSection.Relocations)
                 {
-                    var relocSection = ((SimpleRelocations)section.SectionData);
+                    var symbol = reloc.Symbol;
 
-                    foreach (var reloc in relocSection.Relocations)
+                    if (symbol.Binding != SymbolBinding.Local && (symbol.Binding == SymbolBinding.Global && symbol.Type != SymbolType.Function))
                     {
-                        var symbol = symbolTable.Symbols[reloc.SymbolTargetIndex];
-
-                        if (symbol.BindType != BindingType.LOCAL)
-                        {
-                            continue;
-                        }
-
-                        relocs.Add(new ZeldaReloc(header, section, reloc));
+                        continue;
                     }
-                }
-                else if (section.Type == SectionType.RELOC_ADD)
-                {
-                    var relocSection = ((AddendRelocations)section.SectionData);
 
-                    foreach (var reloc in relocSection.Relocations)
+                    var convertedReloc = ZeldaReloc.FromReloc(reloc, section, baseAddress);
+                    if (convertedReloc.HasValue)
                     {
-                        var symbol = symbolTable.Symbols[reloc.SymbolTargetIndex];
-
-                        if (symbol.BindType != BindingType.LOCAL)
-                        {
-                            continue;
-                        }
-
-                        relocs.Add(new ZeldaReloc(header, section, reloc));
+                        relocs.Add(convertedReloc.Value);
                     }
                 }
             }
@@ -239,26 +227,41 @@ namespace Toolchain
 
             public RelocationType Type;
 
-            public int Offset;
+            public uint Offset;
 
-            public ZeldaReloc(Header header, SectionHeader section, ICommonRelocation reloc)
+            public static ZeldaReloc? FromReloc(ICommonRelocation reloc, ISection parent, uint baseAddress)
             {
-                var ownedSectionName = header.SectionHeaders[section.Info].GetName();
+                var converted = new ZeldaReloc(parent, reloc, baseAddress);
+
+                if (converted.Section == Section.UNKNOWN)
+                {
+                    return null;
+                }
+                else
+                {
+                    return converted;
+                }
+            }
+
+            private ZeldaReloc(ISection section, ICommonRelocation reloc, uint baseAddress)
+            {
+                var ownedSectionName = section.Name;
 
                 Section = SectionMethods.ConvertFromName(ownedSectionName);
                 Type = reloc.Type;
-                Offset = reloc.Offset;
+                Offset = reloc.Offset - baseAddress;
             }
 
             public void Write(EndianBinaryWriter writer)
             {
-                int reloc = ((byte)Section << 30) | ((byte)Type << 24) | Offset;
+                int reloc = ((byte)Section << 30) | ((byte)Type << 24) | (int)Offset;
                 writer.Write(reloc);
             }
         }
 
         public enum Section : byte
         {
+            UNKNOWN = 0,
             TEXT = 1,
             DATA = 2,
             RODATA = 3,
@@ -271,13 +274,13 @@ namespace Toolchain
             {
                 switch (name)
                 {
-                    case ".text":
+                    case ".rel.text":
                         return Section.TEXT;
-                    case ".data":
+                    case ".rel.data":
                         return Section.DATA;
-                    case ".rodata":
+                    case ".rel.rodata":
                         return Section.RODATA;
-                    case ".bss":
+                    case ".rel.bss":
                         return Section.BSS;
                     default:
                         return 0;

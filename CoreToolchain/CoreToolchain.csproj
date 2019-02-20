@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <AssemblyName>Toolchain</AssemblyName>
+    <RootNamespace>Toolchain</RootNamespace>
+    <StartupObject>Toolchain.Program</StartupObject>
+    <Authors>MNGoldenEagle</Authors>
+    <Product>N64 Compilation Toolchain</Product>
+    <Description>A toolchain for compiling code for supported N64 software.</Description>
+    <Copyright>©2019 by MNGoldenEagle</Copyright>
+    <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/MNGoldenEagle/Toolchain</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/MNGoldenEagle/Toolchain</RepositoryUrl>
+    <RepositoryType>Github</RepositoryType>
+    <NeutralLanguage>en-US</NeutralLanguage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ELFSharp" Version="2.1.1" />
+    <PackageReference Include="Mono.Options" Version="5.3.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Commands\Commands.csproj" />
+  </ItemGroup>
+
+</Project>

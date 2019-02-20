@@ -62,8 +62,9 @@ namespace Toolchain
                 {
                     args.Append("-DDEBUG ");
                 }
+                args.AppendFormat("-I \"{0}\"", Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "headers"));
                 args.AppendFormat("-O{0} ", OptimizeLevel);
-                args.AppendFormat("-o {0} ", outputFile);
+                args.AppendFormat("-o \"{0}\" ", outputFile);
                 args.Append(file);
 
                 Console.WriteLine("Compiling {0}...", file);
@@ -74,7 +75,7 @@ namespace Toolchain
                     Arguments = args.ToString(),
                     CreateNoWindow = true,
                     ErrorDialog = false,
-                    RedirectStandardInput = false,
+                    RedirectStandardInput = true,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     UseShellExecute = false,

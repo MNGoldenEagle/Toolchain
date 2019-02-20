@@ -4,6 +4,7 @@ using MiscUtil.IO;
 using MiscUtil.Conversion;
 using ManyConsole;
 using System;
+using ELFSharp.ELF;
 
 namespace Toolchain
 {
@@ -52,16 +53,9 @@ namespace Toolchain
 
         public void ViewStructure()
         {
-            ELF.Header header;
+            var elf = ELFReader.Load<uint>(Filename);
 
-            using (var file = File.Open(Filename, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete))
-            {
-                using (var reader = new EndianBinaryReader(EndianBitConverter.Big, file))
-                {
-                    header = new ELF.Header(reader);
-                    header.Describe();
-                }
-            }
+            Console.WriteLine(elf);
         }
     }
 }

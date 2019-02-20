@@ -48,9 +48,9 @@ namespace Toolchain
         public int Assemble()
         {
             var args = new StringBuilder("-march mips3 -mabi 32 -mno-shared -call_nonpic -EB ");
-            args.AppendFormat("-o {0} ", OutputFile);
+            args.AppendFormat("-o \"{0}\" ", OutputFile);
 
-            args.Append(SourceFiles.Aggregate((allFiles, filename) => allFiles += ' ' + filename));
+            args.Append(SourceFiles.Aggregate((allFiles, filename) => allFiles += " \"" + filename + "\""));
 
             Console.WriteLine("Assembling to {0}...", OutputFile);
 
