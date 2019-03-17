@@ -56,10 +56,10 @@ N64 titles.  Specifically, it compiles with the following options:
 |DF3DEX_GBI_2|Use F3DEX2 version of the Graphics Binary Interface.|
 |D_LANGUAGE_C|Compiling for C code.|
 |v|Verbose output for debugging purposes.|
-|target mips-mips2-elf^1^|Emits assembly for the MIPS II ISA intended for ELF binaries.|
-|march=mips2^1^|Target the MIPS II architecture.  This is necessary to use the `o32` ABI.|
-|mabi=o32^1^|Use the `o32` MIPS ABI.  All existing N64 titles use this ABI.|
-|mfp64^1^|Enables 64-bit floating point registers.  This emulates MIPS III functionality.|
+|target mips-mips2-elf<sup>1</sup>|Emits assembly for the MIPS II ISA intended for ELF binaries.|
+|march=mips2<sup>1</sup>|Target the MIPS II architecture.  This is necessary to use the `o32` ABI.|
+|mabi=o32<sup>1</sup>|Use the `o32` MIPS ABI.  All existing N64 titles use this ABI.|
+|mfp64<sup>1</sup>|Enables 64-bit floating point registers.  This emulates MIPS III functionality.|
 |S|Compile to the assembly stage.  This is due to limitations with the Clang linker.|
 
 1: Clang forces use the `n32` or `n64` ABI when compiling on MIPS III or later, however the vast majority
@@ -96,13 +96,13 @@ of Time: Master Quest.  Accepted versions for the `-t` or `--target` parameter a
 
 |Value|Description|
 |-----|-----------|
-|1.0U^1, 2^|Ocarina of Time NTSC 1.0 (US/Japan)|
-|1.1U^1^|Ocarina of Time NTSC 1.1 (US/Japan)|
-|1.2U^1^|Ocarina of Time NTSC 1.2 (US/Japan)|
+|1.0U<sup>1, 2</sup>|Ocarina of Time NTSC 1.0 (US/Japan)|
+|1.1U<sup>1</sup>|Ocarina of Time NTSC 1.1 (US/Japan)|
+|1.2U<sup>1</sup>|Ocarina of Time NTSC 1.2 (US/Japan)|
 |1.0E|Ocarina of Time PAL 1.0 (EU)|
 |1.1E|Ocarina of Time PAL 1.1 (EU)|
 |MQU|Ocarina of Time: Master Quest NTSC|
-|DEBUG^2^|Ocarina of Time: Master Quest Debug ROM PAL|
+|DEBUG<sup>2</sup>|Ocarina of Time: Master Quest Debug ROM PAL|
 
 1: You may also specify a J postfix instead of U.  Toolchain treats them as equivalent.
 
@@ -130,7 +130,7 @@ that most compilers will elide the variable if it's not referenced in your code 
 from happening, use `__attribute__((used))` on your variable spec (this works for Clang and GCC).
 For example:
 
-```
+```c
 static const ActorInit INIT __attribute__((used)) = {
     .actorID = 0x72,
     .actorType = ACT_TYP_PROP2,
@@ -138,8 +138,8 @@ static const ActorInit INIT __attribute__((used)) = {
     .flags = 0,
     .objectID = 1,
     .instanceSize = sizeof(DemoActor),
-    .initialize = constructor,
-    .deinitialize = destructor,
+    .constructor = constructor,
+    .destructor = destructor,
     .update = update,
     .draw = draw
 };
