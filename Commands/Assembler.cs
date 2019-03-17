@@ -56,7 +56,7 @@ namespace Toolchain
 
             var info = new ProcessStartInfo()
             {
-                FileName = "as.exe",
+                FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Binaries", "as.exe"),
                 Arguments = args.ToString(),
                 CreateNoWindow = true,
                 ErrorDialog = false,

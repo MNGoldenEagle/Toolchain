@@ -62,7 +62,7 @@ namespace Toolchain
                 {
                     args.Append("-DDEBUG ");
                 }
-                args.AppendFormat("-I \"{0}\"", Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "headers"));
+                args.AppendFormat("-I \"{0}\"", Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Headers"));
                 args.AppendFormat("-O{0} ", OptimizeLevel);
                 args.AppendFormat("-o \"{0}\" ", outputFile);
                 args.Append(file);
@@ -71,7 +71,7 @@ namespace Toolchain
 
                 ProcessStartInfo info = new ProcessStartInfo()
                 {
-                    FileName = "clang.exe",
+                    FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Binaries", "clang.exe"),
                     Arguments = args.ToString(),
                     CreateNoWindow = true,
                     ErrorDialog = false,

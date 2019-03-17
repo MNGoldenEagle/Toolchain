@@ -61,7 +61,7 @@ namespace Toolchain
             var args = new StringBuilder("-A elf32-bigmips -S");
             string templateFilename = LinkTarget.DisplayName;
 
-            args.AppendFormat(" -T \"{0}\"", Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "templates", templateFilename));
+            args.AppendFormat(" -T \"{0}\"", Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates", templateFilename));
             args.AppendFormat(" -o \"{0}\"", OutputFile);
 
             foreach (var file in SourceFiles)
@@ -73,7 +73,7 @@ namespace Toolchain
 
             ProcessStartInfo info = new ProcessStartInfo()
             {
-                FileName = @"c:\gcc\ld.exe",
+                FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Binaries", "ld.exe"),
                 Arguments = args.ToString(),
                 CreateNoWindow = true,
                 ErrorDialog = false,

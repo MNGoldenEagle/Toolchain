@@ -20,7 +20,7 @@ namespace Commands
 
         public override int Run(string[] remainingArguments)
         {
-            var memoryTableFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "templates", "Memory Table.csv");
+            var memoryTableFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates", "Memory Table.csv");
 
             var memoryTables = GetMemoryTables(File.ReadLines(memoryTableFile));
 
@@ -30,7 +30,7 @@ namespace Commands
                 table.Sort();
 
                 var linkerScript = GenerateLinkerScript(table);
-                var linkerScriptFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "templates", target.DisplayName);
+                var linkerScriptFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates", target.DisplayName);
 
                 File.WriteAllLines(linkerScriptFile, linkerScript, Encoding.UTF8);
             }
