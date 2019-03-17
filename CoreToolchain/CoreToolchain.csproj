@@ -1,8 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk" DefaultTargets="Compile">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFrameworks>netcoreapp2.1;net462</TargetFrameworks>
     <AssemblyName>Toolchain</AssemblyName>
     <RootNamespace>Toolchain</RootNamespace>
     <StartupObject>Toolchain.Program</StartupObject>
@@ -16,7 +16,7 @@
     <RepositoryType>Github</RepositoryType>
     <NeutralLanguage>en-US</NeutralLanguage>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <RuntimeIdentifiers>win10-x64;osx-x64;linux-x64</RuntimeIdentifiers>
+    <RuntimeIdentifiers>win7-x86;win10-x64;osx-x64;linux-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,4 +27,39 @@
   <ItemGroup>
     <ProjectReference Include="..\Commands\Commands.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Binaries-OSX\" />
+  </ItemGroup>
+
+  <Target Name="Compile">
+    <Exec Command="dotnet build -f net462 -c $(ConfigurationName) -r win10-x64" />
+    <Exec Command="dotnet build -f netcoreapp2.1 -c $(ConfigurationName) -r osx-x64" />
+    <Exec Command="dotnet build -f netcoreapp2.1 -c $(ConfigurationName) -r linux-x64" />
+  </Target>
+
+  <Target Name="PackTogether" AfterTargets="Compile">
+    <Exec Command="dotnet publish -f net462 -c $(ConfigurationName) -r win10-x64" />
+    <Exec Command="dotnet publish -f netcoreapp2.1 -c $(ConfigurationName) -r osx-x64" />
+    <Exec Command="dotnet publish -f netcoreapp2.1 -c $(ConfigurationName) -r linux-x64" />
+  </Target>
+  
+  <Target Name="CopyAssets" AfterTargets="PackTogether">
+    <Exec Command="robocopy &quot;$(ProjectDir)Binaries-Win10&quot; &quot;$(TargetDir)\win10-x64\publish\Binaries&quot; *.* /NP /NJH" />
+    <Exec Command="robocopy &quot;$(ProjectDir)Binaries-OSX&quot; &quot;$(TargetDir)\osx-x64\publish\Binaries&quot; *.* /NP /NJH" />
+    <Exec Command="robocopy &quot;$(ProjectDir)Binaries-Linux&quot; &quot;$(TargetDir)\linux-x64\publish\Binaries&quot; *.* /NP /NJH" />
+    <Exec Command="robocopy &quot;$(ProjectDir)\Templates&quot; &quot;$(TargetDir)\win10-x64\publish\Templates&quot; *.* /NP /NJH" />
+    <Exec Command="robocopy &quot;$(ProjectDir)\Templates&quot; &quot;$(TargetDir)\osx-x64\publish\Templates&quot; *.* /NP /NJH" />
+    <Exec Command="robocopy &quot;$(ProjectDir)\Templates&quot; &quot;$(TargetDir)\linux-x64\publish\Templates&quot; *.* /NP /NJH" />
+    <Exec Command="robocopy &quot;$(SolutionDir)\Z64 Headers&quot; &quot;$(TargetDir)\win10-x64\publish\Headers&quot; *.h /NP /NJH" />
+    <Exec Command="robocopy &quot;$(SolutionDir)\Z64 Headers&quot; &quot;$(TargetDir)\osx-x64\publish\Headers&quot; *.h /NP /NJH" />
+    <Exec Command="robocopy &quot;$(SolutionDir)\Z64 Headers&quot; &quot;$(TargetDir)\linux-x64\publish\Headers&quot; *.h /NP /NJH" />
+    <Exec Command="robocopy &quot;$(SolutionDir)\Z64 Headers\examples&quot; &quot;$(TargetDir)\win10-x64\publish\Examples&quot; *.* /E /NP /NJH" />
+    <Exec Command="robocopy &quot;$(SolutionDir)\Z64 Headers\examples&quot; &quot;$(TargetDir)\osx-x64\publish\Examples&quot; *.* /E /NP /NJH" />
+    <Exec Command="robocopy &quot;$(SolutionDir)\Z64 Headers\examples&quot; &quot;$(TargetDir)\linux-x64\publish\Examples&quot; *.* /E /NP /NJH" />
+  </Target>
+
+  <Target Name="Clean">
+    <Exec Command="RMDIR /S $(TargetDir)" />
+  </Target>
 </Project>

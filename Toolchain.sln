@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Commands", "Commands\Comman
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreToolchain", "CoreToolchain\CoreToolchain.csproj", "{1B9A3015-CB36-4813-AA71-7731ECDEED7A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Z64 Test", "Z64 Test\Z64 Test.vcxproj", "{EBD2F478-B024-4B5B-81A6-281E2B5C8EE6}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Z64 Headers", "Z64 Headers\Z64 Headers.vcxproj", "{EBD2F478-B024-4B5B-81A6-281E2B5C8EE6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
