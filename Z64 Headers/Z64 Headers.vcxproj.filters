@@ -18,9 +18,6 @@
     <ClCompile Include="Z64 Test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="examples/screensaver/screensaver.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="actors.h">
@@ -78,9 +75,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="types.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="examples/screensaver/screensaver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

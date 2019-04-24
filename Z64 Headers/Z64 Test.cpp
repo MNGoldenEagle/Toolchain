@@ -5,9 +5,11 @@ int calcOffset(void*, void*);
 void describeSaveFile();
 void describeGame();
 
+static const Gfx dlist[1] = { gsDPSetRenderMode(G_RM_FOG_PRIM_A, G_RM_AA_ZB_OPA_SURF2) };
+
 int main()
 {
-	describeSaveFile();
+	printf("gsDPSetRenderMode(G_RM_FOG_PRIM_A, G_RM_AA_ZB_OPA_SURF2) == %08x %08x\n", dlist->words.w0, dlist->words.w1);
 }
 
 void describeSaveFile() {
@@ -35,7 +37,9 @@ void describeSaveFile() {
 
 void describeGame() {
 	Game game;
+	Graphics grph;
 	printf("game -> %08x\n", (int)&game);
+	printf("OPA_DISP.append_end -> %08x\n", calcOffset(&grph, &grph.POLY_OPA_DISP.append_end));
 	printf("cameras           -> %08x\n", calcOffset(&game, &game.cameras));
 	printf("actors            -> %08x\n", calcOffset(&game, &game.actors));
 	printf("flags             -> %08x\n", calcOffset(&game, &game.flags));

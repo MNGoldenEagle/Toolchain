@@ -4,6 +4,7 @@
 #include "memory.h"
 #include "graphics.h"
 
+typedef struct BasicActor BasicActor;
 struct Game;
 struct ObjectContext;
 
@@ -25,15 +26,15 @@ typedef enum ActorType {
 
 // The flags that can be applied to an actor.
 typedef enum ActorFlags {
-	NONE = 0x00000000,
-	TARGETABLE = 0x00000001, // Actor can be Z-targeted
-	APPROACH_MUSIC = 0x00000004, // Play enemy music when actor is near Link (requires TARGETABLE)
-	FORCE_UPDATE = 0x00000010, // Force update function to run regardless of proximity to camera
-	FORCE_DRAW = 0x00000020  // Force draw function to run regardless of proximity to camera
+	ACT_FLG_NONE           = 0x00000000,
+	ACT_FLG_TARGETABLE     = 0x00000001, // Actor can be Z-targeted
+	ACT_FLG_APPROACH_MUSIC = 0x00000004, // Play enemy music when actor is near Link (requires TARGETABLE)
+	ACT_FLG_FORCE_UPDATE   = 0x00000010, // Force update function to run regardless of proximity to camera
+	ACT_FLG_FORCE_DRAW     = 0x00000020  // Force draw function to run regardless of proximity to camera
 } ActorFlags;
 
 // The common, basic structure of an actor.
-typedef struct BasicActor {
+struct BasicActor {
 	/* 0x000 */ u16 actorNumber;           // The index of the actor in the actor table.
 	/* 0x002 */ u8 actorType;              // The type of actor according to ActorType.
 	/* 0x003 */ u8 roomNumber;             // The room index for the current map the actor is in.  If set to FF, the actor will always remain loaded.
@@ -116,7 +117,7 @@ typedef struct BasicActor {
 	/* 0x130 */ void(*updateFunc)(BasicActor*, Game*); // The update function of this actor.  Will be called on each frame to allow the actor to update its position.
 	/* 0x134 */ void(*drawFunc)(BasicActor*, Game*);   // The draw function of this actor.  Will be called on each frame to allow the actor to render any relevant display lists.
 	/* 0x138 */ void* overlayEntry;        // Points to the actor overlay entry in the overlay table.
-} BasicActor;
+};
 
 #define ACT_RM_UNDEF -1
 
@@ -136,25 +137,25 @@ typedef struct ActorInit {
 } ActorInit;
 
 typedef enum InitType {
-	S8_STOP,
-	U8_STOP,
-	S16_STOP,
-	U16_STOP,
-	S32_STOP,
-	U32_STOP,
-	F32_STOP,
-	F32_1000_STOP,
-	S8,
-	VEC3F = S8,
-	U8,
-	VEC3F_1000 = U8,
-	S16,
-	VEC3S = S16,
-	U16,
-	S32,
-	U32,
-	F32,
-	F32_1000
+	ACT_INIT_S8_STOP,
+	ACT_INIT_U8_STOP,
+	ACT_INIT_S16_STOP,
+	ACT_INIT_U16_STOP,
+	ACT_INIT_S32_STOP,
+	ACT_INIT_U32_STOP,
+	ACT_INIT_F32_STOP,
+	ACT_INIT_F32_1000_STOP,
+	ACT_INIT_S8,
+	ACT_INIT_VEC3F = ACT_INIT_S8,
+	ACT_INIT_U8,
+	ACT_INIT_VEC3F_1000 = ACT_INIT_U8,
+	ACT_INIT_S16,
+	ACT_INIT_VEC3S = ACT_INIT_S16,
+	ACT_INIT_U16,
+	ACT_INIT_S32,
+	ACT_INIT_U32,
+	ACT_INIT_F32,
+	ACT_INIT_F32_1000
 } InitType;
 
 // Initializes values within the actor instance.  This format can be used to
@@ -182,10 +183,16 @@ extern BasicActor* SpawnActor(ObjectContext* objects, Game* context, s32 actorNu
 
 /** Actor Draw Routines **/
 
-extern void InitRenderer(u64* gfx, Graphics* gfxContext, u8* filename, s32 line);
+typedef struct GfxState {
+	Gfx* prevOpaq;
+	Gfx* prevXlu;
+	Gfx* prevDecal;
+} GfxState;
+
+extern void InitRenderer(GfxState* state, Graphics* gfxContext, s8* filename, s32 line);
 extern void ActorDLStart(Graphics* gfxContext);
 extern void DrawAnimatedActor(Game* game, SegmentAddr** skeleton_data, void* anim_data, s32 unk0, s32 unk1, s32 unk2);
-extern void ActorDLEnd(u64* gfx, Graphics* gfxContext, u8* filename, s32 line);
+extern void ActorDLEnd(GfxState* state, Graphics* gfxContext, s8* filename, s32 line);
 
 /** Actor Manipulation Routines **/
 
@@ -196,7 +203,7 @@ extern void SetActorHeight(BasicActor* instance, f32 offsetY);
 extern void SetActorUniformScale(BasicActor* actor, f32 factor);
 extern void InitializeActorShadow(void* shadow_data, f32 a1, void* shadowDrawFunc, f32 a3);
 // Allocates and pushes a new matrix to the matrix stack and returns a pointer to the newly created matrix.
-extern Mtx* AllocateModelMatrix(Graphics* gfx, u8* filename, u32 lineno);
+extern Mtx* AllocateModelMatrix(Graphics* gfx, s8* filename, u32 lineno);
 // Rotates the specified matrix around the X axis (roll).  If useCurrentMatrix is false, the topmost matrix in the stack will be rotated instead.
 extern void RotateByRadiansX(f32 radians, bool useCurrentMatrix);
 // Rotates the specified matrix around the Y axis (yaw).  If useCurrentMatrix is false, the topmost matrix in the stack will be rotated instead.
@@ -217,18 +224,6 @@ extern bool IsActorAttached(BasicActor* instance, Game* context);
 // * If the actor is facing toward Link within the given delta.
 // If any of the above conditions are not met, the function will return FALSE.
 extern bool IsLinkAttackingActor(Game* context, BasicActor* instance, f32 distance, f32 actorYawDelta, s16 linkAngleDelta, s16 actorYaw);
-
-/** Game Manipulation Routines **/
-
-// The type of respawn.
-typedef enum RespawnType {
-	VOID_OUT, // Used when respawning due to hitting a void plane.
-	GROTTO,   // Used when returning Link back from where he entered a grotto.
-	WARP      // Used when returning Link back to where he cast Farore's Wind.
-} RespawnType;
-
-// Sets the entrance index to use when Link is spawned based on the specified respawn type.
-extern void SetRespawnPoint(Game* context, RespawnType type, s32 entranceIndex);
 
 /** Actor Lifecycle Routines **/
 

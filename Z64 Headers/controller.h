@@ -30,8 +30,8 @@ typedef struct OSContPad {
 } OSContPad;
 
 typedef struct Controller {
-	/* 0x00 */ OSContPad input;   /* doesn't appear to be read by game */
-	/* 0x06 */ OSContPad input2;  /* seems to be set simultaneously as input */
-	/* 0x0C */ OSContPad press;   /* only tracks button presses; stick sometimes matches input, sometimes doesn't */
-	/* 0x12 */ OSContPad release; /* only tracks button releases; stick is something weird */
+	/* 0x00 */ OSContPad current;   /* the current state of the controller */
+	/* 0x06 */ OSContPad last;      /* the previous state of the controller */
+	/* 0x0C */ OSContPad pressed;   /* only tracks button presses; stick sometimes matches input, sometimes doesn't */
+	/* 0x12 */ OSContPad releaseed; /* only tracks button releases; stick is something weird */
 } Controller;

@@ -67,7 +67,7 @@ typedef unsigned long   size_t;
 #endif
 #endif
 
-#ifndef _LANGUAGE_C_PLUS_PLUS
+#ifndef _MSC_BUILD
 typedef signed long        bool;    /* simple boolean type */
 #endif
 

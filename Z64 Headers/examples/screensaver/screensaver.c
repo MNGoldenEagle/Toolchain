@@ -15,10 +15,12 @@ const RGBA32 COLORS[12] = {
 	{255,0,128,255}  // Pink
 };
 
-#define MIN_X 20
-#define MAX_X 300
-#define MIN_Y 10
-#define MAX_Y 200
+static const s8 BOUNCE_TEXT[] = "BOUNCING TEXT IS BOUNCY";
+
+#define MIN_X 0
+#define MAX_X 27 - sizeof(BOUNCE_TEXT)
+#define MIN_Y 0
+#define MAX_Y 19
 #define MAX_COLORS 12
 
 void constructor(BasicActor* instance, Game* game) {
@@ -27,7 +29,7 @@ void constructor(BasicActor* instance, Game* game) {
 	actor->y = MIN_Y;
 	actor->forward = TRUE;
 	actor->downward = TRUE;
-	actor->color = MAX_COLORS;
+	actor->color = 0;
 }
 
 void destructor(BasicActor* instance, Game* game) {
@@ -63,8 +65,16 @@ void update(BasicActor* instance, Game* game) {
 
 void draw(BasicActor* instance, Game* game) {
 	ScreenSaverActor* actor = (ScreenSaverActor*)instance;
+	GfxState state;
+	InitRenderer(&state, game->globals.graphics, "screensaver.c", 69);
+	DebugText debugText;
+	InitDebugText(&debugText);
+	debugText.dlist = game->globals.graphics->POLY_OPA_DISP.append;
+	OpenDebugText(&debugText, &debugText.dlist);
 	SetTextPos(&debugText, actor->x, actor->y);
 	RGBA32 color = COLORS[actor->color];
 	SetTextRGBA(&debugText, color.r, color.g, color.b, color.a);
-	SetTextString(&debugText, "BOUNCING TEXT IS BOUNCY");
+	SetTextString(&debugText, BOUNCE_TEXT);
+	CloseDebugText(&debugText);
+	ActorDLEnd(&state, game->globals.graphics, "screensaver.c", 84);
 }

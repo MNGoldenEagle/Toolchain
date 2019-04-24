@@ -21,11 +21,14 @@ typedef struct Rect {
 	u32 right;
 } Rect;
 
-typedef struct RGBA32 {
-	u8 r;
-	u8 g;
-	u8 b;
-	u8 a;
+typedef union RGBA32 {
+	struct {
+		u8 r;
+		u8 g;
+		u8 b;
+		u8 a;
+	};
+	u32 hex;
 } RGBA32;
 
 typedef struct DLContext {
@@ -66,7 +69,7 @@ typedef struct Graphics {
 	/* 0x2E0 */ s8 padding7[8];
 	/* 0x2E8 */ s32 frameCtr2;
 	/* 0x2EC */ void(*func_ptr)();
-	/* 0x2F0 */ GlobalContext* globals;
+	/* 0x2F0 */ struct GlobalContext* globals;
 } Graphics;
 
 extern void guPerspective(Mtx* m, u16* perspNormal, f32 fovy, f32 aspect, f32 near, f32 far, f32 scale);

@@ -1,18 +1,19 @@
 #pragma once
 
 #include "types.h"
-#include "actors.h"
 #include "controller.h"
 #include "graphics.h"
 #include "collision.h"
 #include "cutscenes.h"
+
+struct BasicActor;
 
 // An entry in the actor table.
 typedef struct ActorTableEntry {
 	// The number of actor instances have been created for this type.
 	u32 count;
 	// A pointer to the first actor instance in this category.
-	BasicActor* first;
+	struct BasicActor* first;
 } ActorTableEntry;
 
 // Game state for tracking actor information.
@@ -25,9 +26,9 @@ typedef struct ActorContext {
 	/* 0x08 */ ActorTableEntry actorTable[12];
 	/* 0x6C */ u8 padding3[0x38];
 	           // The actor tracked by the Z-target reticle.
-	/* 0xA4 */ BasicActor* followActor;
+	/* 0xA4 */ struct BasicActor* followActor;
 	           // The actor currently Z-targeted.
-	/* 0xA8 */ BasicActor* targetedActor;
+	/* 0xA8 */ struct BasicActor* targetedActor;
 	/* 0xAC */ u8 padding4[0x58];
 } ActorContext;
 
@@ -61,8 +62,8 @@ typedef struct BufferContext {
 } BufferContext;
 
 typedef enum StateLifecycle {
-	SWITCH_STATE,
-	RUN_STATE
+	GLB_ST_SWITCH,
+	GLB_ST_RUN
 } StateLifecycle;
 
 // Global state used across all game modes.
@@ -120,7 +121,7 @@ typedef struct CameraContext {
 	/* 0x01C */ f32 unk_0xDC;
 	/* 0x020 */ u8 padding[0x190];
 	            // The actor the camera will follow behind.
-	/* 0x1B0 */ BasicActor* followActor;
+	/* 0x1B0 */ struct BasicActor* followActor;
 	/* 0x1B4 */ u8 padding2[0x19B0];
 } CameraContext;
 
@@ -169,10 +170,10 @@ typedef struct TitleCardContext { /* 0x01D4C */
 
 // The current state of the cutscene.
 typedef enum CutsceneState {
-	OFF,
-	INIT,
-	RUNNING,
-	STOP
+	CTSN_ST_OFF,
+	CTSN_ST_INIT,
+	CTSN_ST_RUNNING,
+	CTSN_ST_STOP
 } CutsceneState;
 
 // Stores information about the currently loaded cutscene.
@@ -354,3 +355,14 @@ typedef struct SaveFile {
 	/* 0x1358 */ s32 padding13[8];
 	/* 0x1378 */ u16 grottoEntranceIndex; // The entrance index to use when leaving a grotto.
 } SaveFile;
+
+typedef struct StaticContext {
+	/* 0x0000 */ u32 unknown[71];
+	/* 0x011C */ s16 unk_0x11c; // Used by audio debugger (in draw)
+	/* 0x011E */ s16 unknown2[51];
+	/* 0x0184 */ s16 unk_0x184; // Used by audio debugger (in draw)
+	/* 0x0186 */ s16 unknown3[1878];
+	/* 0x1032 */ s16 unk_0x1032; // Used by audio debugger (in draw)
+} StaticContext;
+
+extern StaticContext* staticContext;
