@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using Toolchain;
 
-namespace Commands
+namespace Toolchain
 {
     public class Pj64Symbols : ConsoleCommand
     {

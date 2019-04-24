@@ -5,15 +5,19 @@ All releases include compiled binaries for the toolchain and its dependencies.
 
 Note that each mode is documented in terms of how it operates and uses its dependencies.  If you want to
 replace part or all of Toolchain with the original tools, you may use the documentation as a starting
-point for what flags will work for your pipeline.
+point for what flags will work for your pipeline.  If you are interested in getting started on building
+overlays as quickly as possible, start by reading the first two modes in the Usage section.
 
 * [Dependencies](#dependencies)
 * [Usage](#usage)
+  - [PrepareLinker Mode](#preparelinker-mode)
+  - [Build Mode](#build-mode)
   - [Compile Mode](#compile-mode)
   - [Assembler Mode](#assembler-mode)
   - [Linker Mode](#linker-mode)
   - [Overlay Mode](#overlay-mode)
-  - [PrepareLinker Mode](#preparelinker-mode)
+  - [Pj64Sym Mode](#pj64sym-mode)
+* [FAQ](#faq)
 * [Contributions](#contributions)
 
 ## Dependencies
@@ -32,6 +36,35 @@ which may be desired if you wish to customize your assembled code or modify how 
 Note that Toolchain comes with expressive help at the command-line that explains all of the options and
 flags available for each mode.  If you use `toolchain --help` or `toolchain /?` it will display a list
 of accepted modes.
+
+### PrepareLinker Mode
+```toolchain preparelinker```
+
+Generates linker scripts for all possible targets by parsing the `Memory Table.csv` file and writing the
+entries into the templates folder.  This step is typically not necessary; you only need to execute this if
+you have modified the included header files and added the corresponding entry in the CSV.
+
+The format of the CSV file is documented in the header row.  You can modify the file using a program such
+as Excel or LibreOffice.  Note that the CSV will likely be replaced with a different mechanism in a future
+release.
+
+### Build Mode
+```toolchain build --output=<overlay file> [--target=version] [--release] <source files>```
+
+Builds a compiled, linked, injectable overlay file based on the provided source files.  This mode is provided
+as a convenience to easily generate overlays without invoking each of the individual modes manually.  Only a
+small subset of options are made available using this mode.  For more complex build operations, invoke each
+mode manually.
+
+Note that this is provided primarily as a convenience.  For larger projects, you may want to leverage a
+build automation tool like [cmake](https://cmake.org).
+
+For more information about the `--target` option, see the documentation for the [Link Mode](#link-mode).
+
+The `--release` argument indicates that the overlay is in a releasable state and should be optimized as
+aggressively as possible.  In addition, the `RELEASE` macro will be defined during the compilation step.
+When this argument is not specified, no optimizations will be performed and the `DEBUG` macro will be
+defined instead during the compilation step.
 
 ### Compile Mode
 ```toolchain [-O#] <source files>```
@@ -163,16 +196,49 @@ InitVar:
 
 Overlay is implemented directly in the Toolchain and does not rely on any external programs.
 
-### PrepareLinker Mode
-```toolchain preparelinker```
+### Pj64Sym Mode
+```toolchain pj64sym --target=<version> --output=<symbol file>```
 
-Generates linker scripts for all possible targets by parsing the `Memory Table.csv` file and writing the
-entries into the templates folder.  This step is typically not necessary; you only need to execute this if
-you have modified the included header files and added the corresponding entry in the CSV.
+Generates a .sym file compatible with the Project64 debugger based on the symbols currently defined in the
+memory table.  Due to limitations in the memory table, all symbols will be exported as "data" with a
+description matching their category.
 
-The format of the CSV file is documented in the header row.  You can modify the file using a program such
-as Excel or LibreOffice.  Note that the CSV will likely be replaced with a different mechanism in a future
-release.
+For more information about the `--target` option, see the documentation for the [Link Mode](#link-mode).
+
+## FAQ
+### What's the difference between this and the z64ovl tool?
+The z64ovl tool and this tool were developed in parallel, so there is quite a bit of overlap between the
+two tools.
+
+Currently, the only major difference is how your code is linked to the ROM.  z64ovl uses inline assembly and
+version-specific C files to link function calls to the existing code in the game.  Toolchain uses a linker
+script to link the function calls to the existing code.
+
+The consequences of this are minor but important.  With inline assembly, it is more difficult to maintain
+or modify when a symbol moves location, but you will get immediate feedback from the compiler when using a
+symbol that doesn't exist.  With a linker script, it's easier to maintain multiple versions and move symbols
+to other locations, but you will not see an error message until you attempt to link your code.
+
+### What's the deal with this Memory Table CSV file?
+It's a way for the program to keep track of where functions are located across each version of the ROM.  The
+values are provided based on what has been researched by the community so far, which mostly spans versions
+1.0U and Master Quest Debug ROM for Ocarina of Time.  Feel free to modify this file if you need to introduce
+new functions or define them for a version that doesn't currently include them.  And if you do come up with
+any, please contribute them to the project!
+
+In the future, the memory table file will be replaced with a new mechanism that's less reliant on 70's tech.
+
+### Why does this include DLL files?
+The .NET Framework generates .DLL files for each assembly, regardless of the target operating system.  They
+are the equivalent of .so files, though they do not conform to the ELF object format.  In the future, the
+application will be statically compiled once its reliance on reflection is removed.
+
+### Why clang instead of GCC?
+GCC had some compilation issues, particularly with the GBI, but likely would work fine for most projects.
+Clang has much better error messaging and is more user-friendly, but is not as efficient when generating
+assembly.
+
+A future improvement to this tool will be allowing the choice of compiler.
 
 ## Contributions
 To contribute to Toolchain or the accompanying SDK, create an issue and pull request on
