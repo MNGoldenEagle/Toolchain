@@ -22,7 +22,7 @@ namespace Toolchain
 
             HasRequiredOption<string>("o|output=", "Specifies the name of the generated actor file", value => OutputFile = value);
 
-            HasOption<string>("t|target:", "Indicates which version of the ROM to link against.", value => {
+            HasOption<string>("t|target=", "Indicates which version of the ROM to link against.", value => {
                 var target = Target.PAL_MQ_DEBUG;
                 if (!Target.TryParse(value, out target))
                 {
@@ -67,6 +67,7 @@ namespace Toolchain
             if (resultCode != 0)
             {
                 Console.Error.WriteLine("Error occurred on Compile step.  Exiting...");
+                CleanupArtifacts();
                 return resultCode;
             }
 
@@ -76,9 +77,11 @@ namespace Toolchain
                 OutputFile = Path.GetTempFileName()
             };
             resultCode = assembleStep.Run(null);
+            CleanupCompilerArtifacts();
             if (resultCode != 0)
             {
                 Console.Error.WriteLine("Error occurred on Assemble step.  Exiting...");
+                CleanupArtifacts();
                 return resultCode;
             }
 
@@ -89,9 +92,11 @@ namespace Toolchain
                 LinkTarget = Target
             };
             resultCode = linkStep.Run(null);
+            CleanupAssemblerArtifacts();
             if (resultCode != 0)
             {
                 Console.Error.WriteLine("Error occurred on Link step.  Exiting...");
+                CleanupArtifacts();
                 return resultCode;
             }
 
@@ -99,16 +104,46 @@ namespace Toolchain
             {
                 InputFiles = new string[] { Pipeline.LinkedArtifact },
                 OverlayPath = OutputFile,
-                ShowInitAddress = true
+                ShowInitAddress = true,
+                InitializationVariable = "INIT"
             };
             resultCode = overlayStep.Run(null);
+            CleanupLinkerArtifacts();
             if (resultCode != 0)
             {
                 Console.Error.WriteLine("Error occurred on Overlay step.  Exiting...");
+                CleanupArtifacts();
                 return resultCode;
             }
 
             return 0;
+        }
+
+        private void CleanupArtifacts()
+        {
+            CleanupCompilerArtifacts();
+            CleanupAssemblerArtifacts();
+            CleanupLinkerArtifacts();
+        }
+
+        private void CleanupCompilerArtifacts()
+        {
+            foreach (string path in Pipeline.CompiledArtifacts)
+            {
+                File.Delete(path);
+            }
+        }
+
+        private void CleanupAssemblerArtifacts()
+        {
+            if (Pipeline.AssembledArtifact == null) { return; }
+            File.Delete(Pipeline.AssembledArtifact);
+        }
+
+        private void CleanupLinkerArtifacts()
+        {
+            if (Pipeline.LinkedArtifact == null) { return; }
+            File.Delete(Pipeline.LinkedArtifact);
         }
     }
 }
