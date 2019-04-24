@@ -6,7 +6,7 @@ namespace ELF
 {
     public class Relocation : ICommonRelocation
     {
-        private readonly BigEndianBitConverter CONVERTER = new BigEndianBitConverter();
+        private static readonly BigEndianBitConverter CONVERTER = new BigEndianBitConverter();
 
         public const int SIZE = 8;
 

@@ -6,6 +6,8 @@ namespace Toolchain
 {
     internal static class Pipeline
     {
+        internal static bool Release = false;
+
         internal static string[] CompiledArtifacts = { };
 
         internal static string AssembledArtifact { get; set; }

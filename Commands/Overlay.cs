@@ -111,7 +111,7 @@ namespace Toolchain
             }
 
             var symbolTable = elf.GetSections<SymbolTable<uint>>().FirstOrDefault();
-            var relocs = GenerateRelocationSection(elf, symbolTable, programSection.Address);
+            var relocs = GenerateRelocationSection(elf, symbolTable);
             SymbolEntry<uint> initSymbol = null;
             
             if (symbolTable == null && ShowInitAddress)
@@ -191,7 +191,7 @@ namespace Toolchain
             }
         }
 
-        private List<ZeldaReloc> GenerateRelocationSection(ELF<uint> elf, SymbolTable<uint> symbols, uint baseAddress)
+        private List<ZeldaReloc> GenerateRelocationSection(ELF<uint> elf, SymbolTable<uint> symbols)
         {
             var relocationSections = elf.Sections.Where(section => section.Type == SectionType.Relocation);
 
@@ -199,18 +199,22 @@ namespace Toolchain
 
             foreach (var section in relocationSections)
             {
+                var pointedSectionName = section.Name.Remove(0, 4);
+                var pointedSection = elf.GetSection(pointedSectionName);
+
                 var relocSection = new SimpleRelocationSection(section, symbols);
 
                 foreach (var reloc in relocSection.Relocations)
                 {
                     var symbol = reloc.Symbol;
 
-                    if (symbol.Binding != SymbolBinding.Local && (symbol.Binding == SymbolBinding.Global && symbol.Type != SymbolType.Function))
+                    // Skip symbols that are not defined in the object file.
+                    if (".reginfo".Equals(symbol.PointedSection.Name))
                     {
                         continue;
                     }
 
-                    var convertedReloc = ZeldaReloc.FromReloc(reloc, section, baseAddress);
+                    var convertedReloc = ZeldaReloc.FromReloc(reloc, section, pointedSection.LoadAddress);
                     if (convertedReloc.HasValue)
                     {
                         relocs.Add(convertedReloc.Value);

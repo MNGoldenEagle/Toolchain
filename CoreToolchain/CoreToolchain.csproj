@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" DefaultTargets="Compile">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -31,7 +31,7 @@
   <ItemGroup>
     <Folder Include="Binaries-OSX\" />
   </ItemGroup>
-
+<!--
   <Target Name="Compile">
     <Exec Command="dotnet build -f net462 -c $(ConfigurationName) -r win10-x64" />
     <Exec Command="dotnet build -f netcoreapp2.1 -c $(ConfigurationName) -r osx-x64" />
@@ -62,4 +62,5 @@
   <Target Name="Clean">
     <Exec Command="RMDIR /S $(TargetDir)" />
   </Target>
+-->
 </Project>

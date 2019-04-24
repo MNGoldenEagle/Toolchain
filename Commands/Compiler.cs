@@ -23,7 +23,7 @@ namespace Toolchain
 
             HasOption<int>("O|optimize=", "Specifies the optimization level (default is none)", value => OptimizeLevel = value);
 
-            AllowsAnyAdditionalArguments("Source files to compile");
+            AllowsAnyAdditionalArguments("<C source files>");
 
             SkipsCommandSummaryBeforeRunning();
         }
@@ -36,13 +36,15 @@ namespace Toolchain
             }
 
             SourceFiles = remainingArguments;
-            Pipeline.CompiledArtifacts = new string[SourceFiles.Length];
 
             return base.OverrideAfterHandlingArgumentsBeforeRun(remainingArguments);
         }
 
         public override int Run(string[] remainingArguments)
         {
+            Pipeline.CompiledArtifacts = new string[SourceFiles.Length];
+            Pipeline.Release = OptimizeLevel > 0;
+
             return Compile();
         }
 
@@ -62,7 +64,7 @@ namespace Toolchain
                 {
                     args.Append("-DDEBUG ");
                 }
-                args.AppendFormat("-I \"{0}\"", Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Headers"));
+                args.AppendFormat("-I \"{0}\" ", Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Headers"));
                 args.AppendFormat("-O{0} ", OptimizeLevel);
                 args.AppendFormat("-o \"{0}\" ", outputFile);
                 args.Append(file);

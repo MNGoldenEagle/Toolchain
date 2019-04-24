@@ -61,7 +61,10 @@ PrintThreadInfo,Debugging,,,,,,,2E10
 SetTextRGBA,Debugging,CBE58,,,,,,FB3AC
 SetTextPos,Debugging,CBEC8,,,,,,FB41C
 SetTextString,Debugging,CC588,,,,,,FBCB4
-debugText,Debugging,,,,,,,168448
+DrawDebugText,Debugging,,,,,,,FBB60
+InitDebugText,Debugging,,,,,,,FBB8C
+OpenDebugText,Debugging,,,,,,,FBC1C
+CloseDebugText,Debugging,,,,,,,FBC64
 DrawSplash,Effects,1BAA0,,,,,,27F80
 CheckChildLinkHasBracelet,Equipment,79AF8,,,,,,8F034
 CheckMirrorShieldEquipped,Equipment,79B64,,,,,,8F098
@@ -121,6 +124,7 @@ ConvertMatrixToFixed,Matrices,AB8D8,,,,,,D1A54
 RenderMatrixAsOpaque,Matrices,AB900,,,,,,D1A88
 MultiplyMatrixByVector,Matrices,AB958,,,,,,D1AF4
 CopyMatrix,Matrices,ABA10,,,,,,D1BA8
+staticContext,Memory,11BA00,,,11BA00,,,15FA90
 segmentTable,Memory,,,,,,,166FA8
 bzero,Memory,,,,,,,4450
 bcmp,Memory,,,,,,,68C0

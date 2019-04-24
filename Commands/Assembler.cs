@@ -23,7 +23,7 @@ namespace Toolchain
 
             HasRequiredOption<string>("o|output=", "Specifies the output filename", value => OutputFile = value);
 
-            AllowsAnyAdditionalArguments("Source files to assemble");
+            AllowsAnyAdditionalArguments("<S assembler files>");
 
             SkipsCommandSummaryBeforeRunning();
         }
