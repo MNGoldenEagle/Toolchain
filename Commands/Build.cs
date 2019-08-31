@@ -128,9 +128,13 @@ namespace Toolchain
 
         private void CleanupCompilerArtifacts()
         {
+            if (Pipeline.CompiledArtifacts == null) { return; }
             foreach (string path in Pipeline.CompiledArtifacts)
             {
-                File.Delete(path);
+                if (path != null)
+                {
+                    File.Delete(path);
+                }
             }
         }
 

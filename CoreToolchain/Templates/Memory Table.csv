@@ -31,9 +31,10 @@ InitializeActorCompact,Actor Initialization,63F7C,,,,,,780DC
 RenderBossTitle,Actor Rendering,20780,,,,,,2CE00
 SetReflectiveMaterial,Actor Rendering,22438,,,,,,2EBCC
 RenderActorShadow,Actor Rendering,26AD0,,,,,,33C30
+RenderActorShadow2,Actor Rendering,,,,,,,2B5EC
 ActorDLStart,Actor Rendering,,,,,,,93D18
-RenderAnimatedActor,Actor Rendering,8993C,,,,,,A15C8
-RenderActor,Actor Rendering,89D8C,,,,,,A1AC8
+DrawAnimatedActorWithMtx,Actor Rendering,8993C,,,,,,A15C8
+DrawAnimatedActor,Actor Rendering,89D8C,,,,,,A1AC8
 InitRenderer,Actor Rendering,,,,,,,C6AC4
 ActorDLEnd,Actor Rendering,,,,,,,C6B54
 DoTrade,Actor Trading,22960,,,,,,2F1C4
@@ -198,3 +199,4 @@ CalcVec3fSubDistance,Vectors,63E5C,,,,,,77FD0
 CalcVec3fHorizDistance,Vectors,63EB8,,,,,,78028
 Vec3sArctan2,Vectors,63F00,,,,,,78068
 Vec3sHorizArctan2,Vectors,63F34,,,,,,7809C
+currentSave,Memory,11A5D0,,,11A5D0,,,15E660

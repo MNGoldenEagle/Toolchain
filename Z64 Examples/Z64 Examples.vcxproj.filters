@@ -18,9 +18,15 @@
     <ClCompile Include="..\Z64 Headers\examples\screensaver\screensaver.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\Z64 Headers\examples\seagull\seagull.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Z64 Headers\examples\screensaver\screensaver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Z64 Headers\examples\seagull\seagull.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

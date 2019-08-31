@@ -122,7 +122,6 @@ typedef struct CameraContext {
 	/* 0x020 */ u8 padding[0x190];
 	            // The actor the camera will follow behind.
 	/* 0x1B0 */ struct BasicActor* followActor;
-	/* 0x1B4 */ u8 padding2[0x19B0];
 } CameraContext;
 
 // Tracks the flags used in the game.
@@ -229,6 +228,9 @@ typedef struct Game {
 	/* 0x000A6 */ u8 padding[0x1A];
 	              // The state of the game camera.
 	/* 0x000C0 */ CameraContext cameras;
+	/* 0x007B4 */ u32 _padding[0x150];
+	/* 0x007B8 */ s32 pausedState;
+	/* 0x007BC */ u32 _padding2[0x51A];
 	              // The state of actors loaded in the game.
 	/* 0x01C24 */ ActorContext actors;
 	              // The state of non-persistent flags.
@@ -300,10 +302,15 @@ typedef struct WarpData {
 	/* 0x14 */ u32 activated;
 } WarpData;
 
+typedef enum LinkAge {
+	AGE_ADULT,
+	AGE_CHILD
+} LinkAge;
+
 // The save file, also used to track overall game state.
 typedef struct SaveFile {
 	/* 0x0000 */ s32 entranceIndex; // The entrance index denoting where Link will load into.
-	/* 0x0004 */ s32 linkIsChild; // If TRUE, Link will be a child.
+	/* 0x0004 */ LinkAge linkAge; // If TRUE, Link will be a child.
 	/* 0x0008 */ s16 padding;
 	/* 0x000A */ s16 cutsceneNumber; // If < 0, indicates the scene cutscene to play.  -16 = cutscene 0, -15 = cutscene 1, and so on, to cutscene 15.
 	/* 0x000C */ s16 currentTime; // The current timestamp.
@@ -354,6 +361,12 @@ typedef struct SaveFile {
 	/* 0x1354 */ s32 fileIndex; // The index of the selected save file, where 0 is file 1.  If 0xFF, then saving is disabled.
 	/* 0x1358 */ s32 padding13[8];
 	/* 0x1378 */ u16 grottoEntranceIndex; // The entrance index to use when leaving a grotto.
+	/* 0x137A */ s16 padding13[37];
+	/* 0x13C4 */ s16 dogFollowingLink;
+	/* 0x13C6 */ s16 padding14[29];
+	/* 0x1400 */ s16 unk_0x1400;
+	/* 0x1402 */ s16 padding15[13];
+	/* 0x141C */ u8 unkDogVar;
 } SaveFile;
 
 typedef struct StaticContext {
@@ -366,3 +379,4 @@ typedef struct StaticContext {
 } StaticContext;
 
 extern StaticContext* staticContext;
+extern SaveFile* currentSave;

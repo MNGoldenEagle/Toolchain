@@ -86,98 +86,99 @@ namespace Toolchain
 
         private void GenerateOverlayFile(string objectFile)
         {
-            var elf = ELFReader.Load<uint>(InputFiles[0]);
-
-            var textSection = elf.Sections.Where(section => ".text".Equals(section.Name)).FirstOrDefault();
-            var dataSection = elf.Sections.Where(section => ".data".Equals(section.Name)).FirstOrDefault();
-            var rodataSection = elf.Sections.Where(section => ".rodata".Equals(section.Name)).FirstOrDefault();
-            var bssSection = elf.Sections.Where(section => ".bss".Equals(section.Name)).FirstOrDefault();
-
-            if (textSection == null)
+            using (var elf = ELFReader.Load<uint>(InputFiles[0]))
             {
-                throw new KeyNotFoundException("Could not find .text section in elf file!  Overlay invalid without code.");
-            }
+                var textSection = elf.Sections.Where(section => ".text".Equals(section.Name)).FirstOrDefault();
+                var dataSection = elf.Sections.Where(section => ".data".Equals(section.Name)).FirstOrDefault();
+                var rodataSection = elf.Sections.Where(section => ".rodata".Equals(section.Name)).FirstOrDefault();
+                var bssSection = elf.Sections.Where(section => ".bss".Equals(section.Name)).FirstOrDefault();
 
-            if (dataSection == null && rodataSection == null)
-            {
-                throw new KeyNotFoundException("No .data or .rodata sections found in elf file!  Overlay invalid without " + InitializationVariable + ".");
-            }
-
-            var programSection = elf.Segments.Where(segment => segment.Flags.HasFlag(SegmentFlags.Execute)).FirstOrDefault();
-
-            if (programSection == null && !ForceNoProgram)
-            {
-                throw new KeyNotFoundException("Could not find executable program section in the overlay.");
-            }
-
-            var symbolTable = elf.GetSections<SymbolTable<uint>>().FirstOrDefault();
-            var relocs = GenerateRelocationSection(elf, symbolTable);
-            SymbolEntry<uint> initSymbol = null;
-            
-            if (symbolTable == null && ShowInitAddress)
-            {
-                throw new KeyNotFoundException("Could not find symbol table in the overlay.");
-            }
-            else
-            {
-                initSymbol = symbolTable.Entries.Where(symbol => InitializationVariable.Equals(symbol.Name)).FirstOrDefault();
-            }
-
-            int length = 0;
-
-            if (initSymbol == null && ShowInitAddress)
-            {
-                throw new KeyNotFoundException("Could not locate initialization structure with symbol name " + InitializationVariable + ".");
-            }
-
-            using (var overlayStream = new EndianBinaryWriter(EndianBitConverter.Big, File.Create(OverlayPath, 1024, FileOptions.RandomAccess)))
-            {
-                overlayStream.Write(programSection.GetFileContents());
-
-                // Ensure the stream is pointing to the end of a 16-byte (64-bit) alignment
-                ForceAlignWrite(overlayStream, 16);
-
-                // Writing overlay header section
-                int position = (int)overlayStream.BaseStream.Position;
-                overlayStream.Write(textSection != null ? textSection.Size : 0);
-                overlayStream.Write(dataSection != null ? dataSection.Size : 0);
-                overlayStream.Write(rodataSection != null ? rodataSection.Size : 0);
-                overlayStream.Write(bssSection != null ? bssSection.Size : 0);
-
-                // Write relocation section
-                overlayStream.Write(relocs.Count);
-
-                foreach (var reloc in relocs)
+                if (textSection == null)
                 {
-                    reloc.Write(overlayStream);
+                    throw new KeyNotFoundException("Could not find .text section in elf file!  Overlay invalid without code.");
                 }
 
-                // Ensure the stream is pointing to the last word in a 64-bit alignment
-                ForceAlignWrite(overlayStream, 12);
-
-                length = (int)overlayStream.BaseStream.Position + 4;
-                var reverseOffset = length - position;
-                overlayStream.Write(reverseOffset);
-            }
-
-            if (!Porcelain)
-            {
-                Console.WriteLine("Overlay written to {0}.", OverlayPath);
-            }
-            else
-            {
-                Console.WriteLine(OverlayPath);
-            }
-
-            if (initSymbol != null && ShowInitAddress)
-            {
-                if (!Porcelain)
+                if (dataSection == null && rodataSection == null)
                 {
-                    Console.WriteLine("{0} structure located at {1:X}.", InitializationVariable, initSymbol.Value);
+                    throw new KeyNotFoundException("No .data or .rodata sections found in elf file!  Overlay invalid without " + InitializationVariable + ".");
+                }
+
+                var programSection = elf.Segments.Where(segment => segment.Flags.HasFlag(SegmentFlags.Execute)).FirstOrDefault();
+
+                if (programSection == null && !ForceNoProgram)
+                {
+                    throw new KeyNotFoundException("Could not find executable program section in the overlay.");
+                }
+
+                var symbolTable = elf.GetSections<SymbolTable<uint>>().FirstOrDefault();
+                var relocs = GenerateRelocationSection(elf, symbolTable);
+                SymbolEntry<uint> initSymbol = null;
+
+                if (symbolTable == null && ShowInitAddress)
+                {
+                    throw new KeyNotFoundException("Could not find symbol table in the overlay.");
                 }
                 else
                 {
-                    Console.WriteLine("{0:X}", initSymbol.Value);
+                    initSymbol = symbolTable.Entries.Where(symbol => InitializationVariable.Equals(symbol.Name)).FirstOrDefault();
+                }
+
+                int length = 0;
+
+                if (initSymbol == null && ShowInitAddress)
+                {
+                    throw new KeyNotFoundException("Could not locate initialization structure with symbol name " + InitializationVariable + ".");
+                }
+
+                using (var overlayStream = new EndianBinaryWriter(EndianBitConverter.Big, File.Create(OverlayPath, 1024, FileOptions.RandomAccess)))
+                {
+                    overlayStream.Write(programSection.GetFileContents());
+
+                    // Ensure the stream is pointing to the end of a 16-byte (64-bit) alignment
+                    ForceAlignWrite(overlayStream, 16);
+
+                    // Writing overlay header section
+                    int position = (int)overlayStream.BaseStream.Position;
+                    overlayStream.Write(textSection != null ? textSection.Size : 0);
+                    overlayStream.Write(dataSection != null ? dataSection.Size : 0);
+                    overlayStream.Write(rodataSection != null ? rodataSection.Size : 0);
+                    overlayStream.Write(bssSection != null ? bssSection.Size : 0);
+
+                    // Write relocation section
+                    overlayStream.Write(relocs.Count);
+
+                    foreach (var reloc in relocs)
+                    {
+                        reloc.Write(overlayStream);
+                    }
+
+                    // Ensure the stream is pointing to the last word in a 64-bit alignment
+                    ForceAlignWrite(overlayStream, 12);
+
+                    length = (int)overlayStream.BaseStream.Position + 4;
+                    var reverseOffset = length - position;
+                    overlayStream.Write(reverseOffset);
+                }
+
+                if (!Porcelain)
+                {
+                    Console.WriteLine("Overlay written to {0}.", OverlayPath);
+                }
+                else
+                {
+                    Console.WriteLine(OverlayPath);
+                }
+
+                if (initSymbol != null && ShowInitAddress)
+                {
+                    if (!Porcelain)
+                    {
+                        Console.WriteLine("{0} structure located at {1:X}.", InitializationVariable, initSymbol.Value);
+                    }
+                    else
+                    {
+                        Console.WriteLine("{0:X}", initSymbol.Value);
+                    }
                 }
             }
         }

@@ -60,6 +60,7 @@ namespace Commands
         {
             lines.Add("SECTIONS {");
             lines.Add("\t.text : {");
+            lines.Add("\t\tPROVIDE(MEMORY_START = .);");
             lines.Add("\t\t*(\".text\")");
             lines.Add("\t} > overlay");
             lines.Add("\t.data : {");

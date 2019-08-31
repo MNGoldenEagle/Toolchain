@@ -14,12 +14,22 @@ typedef struct Vec3s {
 	s16 x, y, z;
 } Vec3s;
 
+typedef struct Vec3b {
+	s8 x, y, z;
+} Vec3b;
+
 typedef struct Rect {
 	u32 top;
 	u32 bottom;
 	u32 left;
 	u32 right;
 } Rect;
+
+typedef struct RGB24 {
+	u8 r;
+	u8 g;
+	u8 b;
+} RGB24;
 
 typedef union RGBA32 {
 	struct {

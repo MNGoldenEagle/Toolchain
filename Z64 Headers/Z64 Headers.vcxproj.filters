@@ -18,6 +18,12 @@
     <ClCompile Include="Z64 Test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="sound.h">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ExampleScene.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="actors.h">
@@ -75,6 +81,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="types.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="maps.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

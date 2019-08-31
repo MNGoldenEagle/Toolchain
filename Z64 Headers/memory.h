@@ -44,6 +44,12 @@ typedef struct FileDesc {
 // the first entry in the table is always NULL.
 extern u32* segmentTable;
 
+// The starting virtual memory address for the current overlay.  Should be passed in to the command line.
+#ifndef MEMORY_START
+	#define MEMORY_START 0x00000000
+#endif // !MEMORY_START
+
+
 // The size of the segmentTable array.
 #define SEGMENT_TABLE_SZ 16
 
@@ -57,3 +63,21 @@ inline void* FromSegmentToVirtual(SegmentAddr address) {
 	return (void*)(u32)(0x80000000 + baseAddr + offset);
 }
 
+#define SEGMENT(type, val) { .segment = type, .offset = (u32)(val) - MEMORY_START }
+#define DIRECT_SEGMENT(val) { .valess = (u32)(val) - MEMORY_START }
+#define LOGO_SEGMENT(val) { .segment = SEG_LOGO, .offset = (u32)(val) - MEMORY_START }
+#define SCENE_SEGMENT(val) { .segment = SEG_SCENE, .offset = (u32)(val) - MEMORY_START }
+#define ROOM_SEGMENT(val) { .segment = SEG_ROOM, .offset = (u32)(val) - MEMORY_START }
+#define GLOBALS_SEGMENT(val) { .segment = SEG_GLOBAL_KEEP, .offset = (u32)(val) - MEMORY_START }
+#define KEEP_SEGMENT(val) { .segment = SEG_SELECTED_KEEP, .offset = (u32)(val) - MEMORY_START }
+#define OBJECT_SEGMENT(val) { .segment = SEG_OBJECT, .offset = (u32)(val) - MEMORY_START }
+#define PLAYER_SEGMENT(val) { .segment = SEG_PLAYER, .offset = (u32)(val) - MEMORY_START }
+#define CTX1_SEGMENT(val) { .segment = SEG_CONTEXT_1, .offset = (u32)(val) - MEMORY_START }
+#define CTX2_SEGMENT(val) { .segment = SEG_CONTEXT_2, .offset = (u32)(val) - MEMORY_START }
+#define CTX3_SEGMENT(val) { .segment = SEG_CONTEXT_3, .offset = (u32)(val) - MEMORY_START }
+#define CTX4_SEGMENT(val) { .segment = SEG_CONTEXT_4, .offset = (u32)(val) - MEMORY_START }
+#define CTX5_SEGMENT(val) { .segment = SEG_CONTEXT_5, .offset = (u32)(val) - MEMORY_START }
+#define CTX6_SEGMENT(val) { .segment = SEG_CONTEXT_6, .offset = (u32)(val) - MEMORY_START }
+#define Z_SEGMENT(val) { .segment = SEG_Z_BUFFER, .offset = (u32)(val) - MEMORY_START }
+#define FRAME_SEGMENT(val) { .segment = SEG_FRAME_BUFFER, .offset = (u32)(val) - MEMORY_START }
+#define SEGMENTV(type, val) { .segment = type, .offset = (u32)(val) - MEMORY_START }

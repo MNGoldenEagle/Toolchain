@@ -66,7 +66,7 @@ void update(BasicActor* instance, Game* game) {
 void draw(BasicActor* instance, Game* game) {
 	ScreenSaverActor* actor = (ScreenSaverActor*)instance;
 	GfxState state;
-	InitRenderer(&state, game->globals.graphics, "screensaver.c", 69);
+	InitRenderer(&state, game->globals.graphics, __FILE__, __LINE__);
 	DebugText debugText;
 	InitDebugText(&debugText);
 	debugText.dlist = game->globals.graphics->POLY_OPA_DISP.append;
@@ -76,5 +76,5 @@ void draw(BasicActor* instance, Game* game) {
 	SetTextRGBA(&debugText, color.r, color.g, color.b, color.a);
 	SetTextString(&debugText, BOUNCE_TEXT);
 	CloseDebugText(&debugText);
-	ActorDLEnd(&state, game->globals.graphics, "screensaver.c", 84);
+	ActorDLEnd(&state, game->globals.graphics, __FILE__, __LINE__);
 }
