@@ -25,6 +25,8 @@ namespace Toolchain
 
         public bool Porcelain { get; set; }
 
+        public bool ZZRomTool { get; set; }
+
         public string InitializationVariable { get; set; }
 
         public Overlay()
@@ -42,6 +44,8 @@ namespace Toolchain
             HasOption<bool>("show-init-addr:", "Outputs the virtual address of the actor init structure (if true, init structure symbol must exist)", value => ShowInitAddress = true);
 
             HasOption<bool>("porcelain:", "Show all output in a format amenable to parsing", value => Porcelain = true);
+
+            HasOption<bool>("zzromtool:", "Convert the overlay to a form compatible with zzromtool", value => ZZRomTool = true);
 
             HasAdditionalArguments(1, "<input compilation unit>");
         }
@@ -130,6 +134,11 @@ namespace Toolchain
                     throw new KeyNotFoundException("Could not locate initialization structure with symbol name " + InitializationVariable + ".");
                 }
 
+                if (initSymbol == null && ZZRomTool)
+                {
+                    throw new KeyNotFoundException("Could not locate initialization structure [" + InitializationVariable + "]: required for zzromtool compatibility mode.");
+                }
+
                 using (var overlayStream = new EndianBinaryWriter(EndianBitConverter.Big, File.Create(OverlayPath, 1024, FileOptions.RandomAccess)))
                 {
                     overlayStream.Write(programSection.GetFileContents());
@@ -158,6 +167,17 @@ namespace Toolchain
                     length = (int)overlayStream.BaseStream.Position + 4;
                     var reverseOffset = length - position;
                     overlayStream.Write(reverseOffset);
+
+                    // If initialization symbol is known and zzromtool compatible mode is set, modify the initialization structure to include the 0xDEADBEEF constant.
+                    // If there was a way to get around this..... I'd do it.
+                    if (ZZRomTool && initSymbol != null)
+                    {
+                        var symbolPosition = initSymbol.Value - programSection.Address;
+                        overlayStream.Seek((int) symbolPosition, SeekOrigin.Begin);
+                        overlayStream.Write((ushort) 0xDEAD);
+                        overlayStream.Seek(8, SeekOrigin.Current);
+                        overlayStream.Write((ushort) 0xBEEF);
+                    }
                 }
 
                 if (!Porcelain)

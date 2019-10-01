@@ -14,6 +14,6 @@ robocopy ".\Templates" "bin\Release\netcoreapp2.1\linux-x64\publish\Templates" *
 robocopy "..\Z64 Headers" "bin\Release\net462\win10-x64\publish\Headers" *.h /NP /NJH
 robocopy "..\Z64 Headers" "bin\Release\netcoreapp2.1\osx-x64\publish\Headers" *.h /NP /NJH
 robocopy "..\Z64 Headers" "bin\Release\netcoreapp2.1\linux-x64\publish\Headers" *.h /NP /NJH
-robocopy "..\Z64 Headers\examples" "bin\Release\net462\win10-x64\publish\Examples" *.* /E /NP /NJH
-robocopy "..\Z64 Headers\examples" "bin\Release\netcoreapp2.1\osx-x64\publish\Examples" *.* /E /NP /NJH
-robocopy "..\Z64 Headers\examples" "bin\Release\netcoreapp2.1\linux-x64\publish\Examples" *.* /E /NP /NJH
+robocopy "..\Z64 Examples\src" "bin\Release\net462\win10-x64\publish\Examples" *.* /E /NP /NJH
+robocopy "..\Z64 Examples\src" "bin\Release\netcoreapp2.1\osx-x64\publish\Examples" *.* /E /NP /NJH
+robocopy "..\Z64 Examples\src" "bin\Release\netcoreapp2.1\linux-x64\publish\Examples" *.* /E /NP /NJH

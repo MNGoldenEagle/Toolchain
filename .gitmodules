@@ -1,0 +1,3 @@
+[submodule "Z64 Headers"]
+	path = Z64 Headers
+	url = git@github.com:MNGoldenEagle/Z64-API.git
