@@ -12,7 +12,9 @@ namespace Toolchain
             var result = new SortedDictionary<Target, MemoryTable>();
 
             var enumerator = rawEntries.GetEnumerator();
+            var lineNumber = 0;
             enumerator.MoveNext(); // Skip header line
+            lineNumber++;
 
             if (enumerator.Current == null)
             {
@@ -21,11 +23,18 @@ namespace Toolchain
 
             while (enumerator.MoveNext())
             {
+                lineNumber++;
                 var tokens = enumerator.Current.Split(',');
+
+                // Skip blank lines (or lines that are comments) so that we can have some sane visual grouping between different categories.
+                if (string.IsNullOrWhiteSpace(enumerator.Current) || enumerator.Current.StartsWith("#"))
+                {
+                    continue;
+                }
 
                 if (tokens.Length != 9)
                 {
-                    throw new FormatException("The memory table file must contain nine values per line. See README for details.");
+                    throw new FormatException(String.Format("The memory table file must contain nine values per line (review line {0}). See README for details.", lineNumber));
                 }
 
                 var symbol = tokens[0];
